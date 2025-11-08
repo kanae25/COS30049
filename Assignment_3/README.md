@@ -24,7 +24,7 @@ The application runs independently and does not require Assignment 2 to be prese
 
 **Linux/macOS:**
 ```bash
-cd assignment_3
+cd Assignment_3
 
 # Create virtual environment
 python -m venv venv
@@ -36,7 +36,7 @@ pip install -r requirements.txt
 
 **Windows (PowerShell):**
 ```powershell
-cd assignment_3
+cd Assignment_3
 
 # Create virtual environment
 python -m venv venv
@@ -55,41 +55,21 @@ pip install -r requirements.txt
 
 **Note:** Frontend dependencies (npm packages) will be automatically installed when you run `python main.py`. No need to run `npm install` manually!
 
-### 2. Verify Model
-
-The AI model should already be packaged in `models/` from Assignment 2:
-
-```bash
-ls models/spam_detection_model.pkl
-```
-
-If the model is missing, copy it from Assignment 2:
-```bash
-# From Assignment 2's outputs/models/ to assignment_3/models/
-cp ../Assignment_2/outputs/models/spam_detection_model.pkl models/
-cp ../Assignment_2/outputs/models/model_metadata.json models/
-```
-
-**Note:** `main.py` will automatically check if the model exists before starting the application.
-
-### 3. Start Application
+### 2. Start Application
 
 Start both backend and frontend with a single command:
 
 **Linux/macOS:**
 ```bash
-cd assignment_3
-source venv/bin/activate
 python main.py
 ```
 
 **Windows (PowerShell):**
 ```powershell
-cd assignment_3
-Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
-venv\Scripts\Activate
 python main.py
 ```
+
+**Note:** If you encounter PowerShell execution policy errors on Windows, run `Set-ExecutionPolicy Bypass -Scope Process` first (you should have already done this in step 1).
 
 This will start:
 - **Backend**: http://localhost:8000
@@ -105,28 +85,23 @@ If you prefer to run them separately:
 
 **Linux/macOS:**
 ```bash
-cd assignment_3
-source venv/bin/activate
 cd backend
 uvicorn main:app --reload --port 8000
 ```
 
 **Windows (PowerShell):**
 ```powershell
-cd assignment_3
-Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
-venv\Scripts\Activate
 cd backend
 uvicorn main:app --reload --port 8000
 ```
 
 **Terminal 2 (Frontend):**
 ```bash
-cd assignment_3/frontend
+cd frontend
 npm run dev
 ```
 
-### 4. Use the Application
+### 3. Use the Application
 
 1. Open http://localhost:5173 in your browser
 2. Enter email text in the input field
@@ -136,7 +111,7 @@ npm run dev
 ## Project Structure
 
 ```
-assignment_3/
+Assignment_3/
 ├── backend/                    # FastAPI backend
 │   ├── main.py                # API endpoints
 │   ├── model_service.py       # AI model loader (packaged from Assignment 2)
@@ -197,12 +172,12 @@ Dependencies are managed in `frontend/package.json`. They are **automatically in
 
 - **npm install fails**: Check Node.js version (16+ required). If automatic installation fails, try manually:
   ```bash
-  cd assignment_3/frontend
+  cd frontend
   npm install
   ```
 - **Vite plugin errors**: Try cleaning and reinstalling:
   ```bash
-  cd assignment_3/frontend
+  cd frontend
   rm -rf node_modules package-lock.json
   npm cache clean --force
   npm install
@@ -235,61 +210,6 @@ Dependencies are managed in `frontend/package.json`. They are **automatically in
 6. **Model packaging**: The AI model from Assignment 2 is packaged in `models/` directory
 7. **Own dependencies**: Assignment 3 has its own `requirements.txt` - no dependency on Assignment 2
 8. **Graceful shutdown**: Press `Ctrl+C` to stop both servers cleanly
-
-## Development
-
-### Start Both Servers (Recommended)
-
-**Linux/macOS:**
-```bash
-cd assignment_3
-source venv/bin/activate
-python main.py
-```
-
-**Windows (PowerShell):**
-```powershell
-cd assignment_3
-Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
-venv\Scripts\Activate
-python main.py
-```
-
-### Start Servers Separately (for debugging)
-
-**Backend only:**
-
-**Linux/macOS:**
-```bash
-cd assignment_3
-source venv/bin/activate
-cd backend
-uvicorn main:app --reload --port 8000
-```
-
-**Windows (PowerShell):**
-```powershell
-cd assignment_3
-Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
-venv\Scripts\Activate
-cd backend
-uvicorn main:app --reload --port 8000
-```
-
-**Frontend only:**
-```bash
-cd assignment_3/frontend
-npm run dev
-```
-
-### Model Verification
-
-The model is automatically verified when you start the application with `python main.py`. If the model is missing, you'll see an error message with instructions.
-
-To manually check if the model exists:
-```bash
-ls assignment_3/models/spam_detection_model.pkl
-```
 
 ## Requirements Compliance
 
