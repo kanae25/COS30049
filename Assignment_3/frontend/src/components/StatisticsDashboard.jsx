@@ -5,31 +5,31 @@ import {
 } from 'recharts'
 import './StatisticsDashboard.css'
 
-// Helper function to create a simple hash from string for deterministic values
+// helper function to create a deterministic hash from string
 const hashString = (str) => {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convert to 32-bit integer
+    hash = hash & hash // convert to 32 bit integer
   }
   return Math.abs(hash)
 }
 
-// Spam-indicating words (common spam patterns)
+// spam indicating words (common spam patterns)
 const SPAM_INDICATORS = new Set([
   'winner', 'prize', 'free', 'click', 'urgent', 'limited', 'offer', 'deal',
   'money', 'cash', 'win', 'congratulations', 'act now', 'guaranteed',
   'http', 'www', 'buy now', 'discount', 'sale', 'credit', 'loan'
 ])
 
-// Legitimate-indicating words (common in legitimate emails)
+// legitimate indicating words (common in legitimate emails)
 const HAM_INDICATORS = new Set([
   'meeting', 'please', 'thanks', 'thank', 'follow', 'question', 'discussion',
   'project', 'team', 'schedule', 'agenda', 'report', 'review', 'update'
 ])
 
-// Helper function to extract tokens and generate deterministic SHAP values
+// helper function to extract tokens and generate deterministic SHAP values
 const generateTokenImpacts = (text, isSpam, spamProbability) => {
   const words = text.toLowerCase().split(/\s+/).filter(w => w.length > 2)
   const wordFreq = {}
@@ -39,42 +39,42 @@ const generateTokenImpacts = (text, isSpam, spamProbability) => {
   
   const uniqueWords = [...new Set(words)]
     .map(word => {
-      // Calculate impact based on spam indicators, safe indicators, and word frequency
+      // calculate impact based on spam indicators and safe indicators and word frequency
       let impact = 0
-      const wordHash = hashString(word + text.substring(0, 50)) // Deterministic hash
+      const wordHash = hashString(word + text.substring(0, 50)) // deterministic hash
       const normalizedHash = (wordHash % 1000) / 1000 // 0 to 1
       
       if (SPAM_INDICATORS.has(word)) {
-        impact = 0.15 + (normalizedHash * 0.1) // 0.15 to 0.25 (spam-indicating)
+        impact = 0.15 + (normalizedHash * 0.1) // 0.15 to 0.25 (spam indicating)
       } else if (HAM_INDICATORS.has(word)) {
-        impact = -0.15 - (normalizedHash * 0.1) // -0.25 to -0.15 (legitimate-indicating)
+        impact = -0.15 - (normalizedHash * 0.1) // -0.25 to -0.15 (legitimate indicating)
       } else {
-        // For other words, base impact on prediction and frequency
+        // for other words, base impact on prediction and frequency
         const freq = wordFreq[word] / words.length
         const baseHash = normalizedHash - 0.5 // -0.5 to 0.5
         
         if (isSpam) {
-          // If prediction is spam, bias strongly toward positive impact
-          // Higher spam probability = stronger positive bias
-          const probabilityBias = (spamProbability - 0.5) * 0.4 // Stronger bias
+          // if prediction is spam bias strongly toward positive impact
+          // higher spam probability means stronger positive bias
+          const probabilityBias = (spamProbability - 0.5) * 0.4 // stronger bias
           impact = baseHash * 0.12 + (freq * 0.02) + probabilityBias
-          // Ensure mostly positive impacts for spam predictions
+          // ensure mostly positive impacts for spam predictions
           if (spamProbability > 0.7) {
-            impact = Math.max(0.05, impact) // Minimum positive for high confidence spam
+            impact = Math.max(0.05, impact) // minimum positive for high confidence spam
           }
         } else {
-          // If prediction is legitimate, bias strongly toward negative impact
+          // if prediction is legitimate bias strongly toward negative impact
           // Lower spam probability = stronger negative bias
-          const probabilityBias = (0.5 - spamProbability) * 0.4 // Stronger bias
+          const probabilityBias = (0.5 - spamProbability) * 0.4 // stronger bias
           impact = baseHash * 0.12 - (freq * 0.02) - probabilityBias
-          // Ensure mostly negative impacts for legitimate predictions
+          // ensure mostly negative impacts for legitimate predictions
           if (spamProbability < 0.3) {
-            impact = Math.min(-0.05, impact) // Maximum negative for high confidence legitimate
+            impact = Math.min(-0.05, impact) // maximum negative for high confidence legitimate
           }
         }
       }
       
-      // Cap impact between -0.3 and 0.3
+      // cap impact between -0.3 and 0.3
       impact = Math.max(-0.3, Math.min(0.3, impact))
       
       return {
@@ -84,12 +84,12 @@ const generateTokenImpacts = (text, isSpam, spamProbability) => {
       }
     })
     .sort((a, b) => Math.abs(parseFloat(b.impact)) - Math.abs(parseFloat(a.impact)))
-    .slice(0, 15) // Top 15 most impactful words
+    .slice(0, 15) // top 15 most impactful words
   
   return uniqueWords
 }
 
-// Helper function to generate deterministic word heatmap data
+// helper function to generate deterministic word heatmap data
 const generateWordHeatmap = (text, isSpam, spamProbability) => {
   const words = text.split(/(\s+)/)
   const lowerText = text.toLowerCase()
@@ -100,50 +100,50 @@ const generateWordHeatmap = (text, isSpam, spamProbability) => {
     let isSpamIndicator = false
     
     if (trimmedWord.length > 2) {
-      // Check if word is a spam or safe indicator
+      // check if word is a spam or safe indicator
       if (SPAM_INDICATORS.has(trimmedWord)) {
-        importance = 0.6 + (hashString(trimmedWord + index.toString()) % 100) / 500 // 0.6 to 0.8
+        importance = 0.6 + (hashString(trimmedWord + index.toString()) % 100) / 500 // 0.6 to 0.8 (spam indicating)
         isSpamIndicator = true
       } else if (HAM_INDICATORS.has(trimmedWord)) {
-        importance = 0.6 + (hashString(trimmedWord + index.toString()) % 100) / 500 // 0.6 to 0.8
+        importance = 0.6 + (hashString(trimmedWord + index.toString()) % 100) / 500 // 0.6 to 0.8 (legitimate indicating)
         isSpamIndicator = false
       } else {
-        // For other words, base importance on position and prediction
+        // for other words, base importance on position and prediction
         const wordHash = hashString(trimmedWord + index.toString())
         const normalizedHash = (wordHash % 100) / 100
         importance = normalizedHash * 0.4 // 0 to 0.4 (lower for neutral words)
         
-        // Determine if word indicates spam based on prediction
-        // If prediction is spam, bias toward spam indicators
-        // If prediction is legitimate, bias toward legitimate indicators
+        // determine if word indicates spam based on prediction
+        // if prediction is spam, bias toward spam indicators
+        // if prediction is legitimate, bias toward legitimate indicators
         if (isSpam) {
-          // For spam predictions, threshold should favor spam indicators
-          // Lower threshold = more words marked as spam-indicating
-          const threshold = 0.55 - (spamProbability - 0.5) * 0.5 // Range: 0.3 to 0.55
+          // for spam predictions, threshold should favor spam indicators
+          // lower threshold means more words marked as spam-indicating
+          const threshold = 0.55 - (spamProbability - 0.5) * 0.5 // range: 0.3 to 0.55
           isSpamIndicator = normalizedHash > threshold
-          // For high confidence spam, ensure most words are spam indicators
+          // for high confidence spam, ensure most words are spam indicators
           if (spamProbability > 0.8) {
-            isSpamIndicator = normalizedHash > 0.35 // Very low threshold
+            isSpamIndicator = normalizedHash > 0.35 // very low threshold
           }
         } else {
-          // For legitimate predictions, threshold should favor legitimate indicators
-          // Higher threshold = more words marked as legitimate-indicating (isSpamIndicator = false)
-          const threshold = 0.45 + (0.5 - spamProbability) * 0.5 // Range: 0.45 to 0.7
+          // for legitimate predictions, threshold should favor legitimate indicators
+          // higher threshold means more words marked as legitimate-indicating (isSpamIndicator = false)
+          const threshold = 0.45 + (0.5 - spamProbability) * 0.5 // range: 0.45 to 0.7
           isSpamIndicator = normalizedHash > threshold
-          // For high confidence legitimate, ensure most words are legitimate indicators
+          // for high confidence legitimate, ensure most words are legitimate indicators
           if (spamProbability < 0.2) {
-            isSpamIndicator = normalizedHash > 0.65 // Very high threshold = mostly false
+            isSpamIndicator = normalizedHash > 0.65 // very high threshold means mostly false
           }
         }
       }
       
-      // Boost importance for words that align with the prediction
+      // boost importance for words that align with the prediction
       if (isSpam && isSpamIndicator) {
         importance = Math.min(1.0, importance * 1.5)
       } else if (!isSpam && !isSpamIndicator) {
         importance = Math.min(1.0, importance * 1.5)
       } else {
-        // Reduce importance for words that contradict the prediction
+        // reduce importance for words that contradict the prediction
         importance = importance * 0.6
       }
     }
@@ -157,7 +157,7 @@ const generateWordHeatmap = (text, isSpam, spamProbability) => {
   })
 }
 
-// Token Impact Visualization Component
+// token impact visualization component
 const TokenImpactVisualization = ({ prediction }) => {
   const [selectedToken, setSelectedToken] = useState(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -204,7 +204,7 @@ const TokenImpactVisualization = ({ prediction }) => {
             onClick={(data) => {
               if (data && data.activePayload && data.activePayload[0]) {
                 const clickedToken = data.activePayload[0].payload.token
-                // If clicking the already selected token, deselect it
+                // if clicking the already selected token, deselect it
                 if (selectedToken === clickedToken) {
                   setSelectedToken(null)
                 } else {
@@ -219,13 +219,13 @@ const TokenImpactVisualization = ({ prediction }) => {
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
-                  // Store tooltip data for custom positioning
+                  // store tooltip data for custom positioning
                   setTooltipData({
                     token: payload[0].payload.token,
                     impact: payload[0].payload.impact,
                     weight: payload[0].payload.weight
                   })
-                  return null // Return null to hide default tooltip
+                  return null // return null to hide default tooltip
                 } else {
                   setTooltipData(null)
                   return null
@@ -250,7 +250,7 @@ const TokenImpactVisualization = ({ prediction }) => {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      {/* Custom tooltip that follows cursor */}
+      {/* custom tooltip that follows cursor */}
       {tooltipData && chartContainerRef.current && (
         <div 
           className="custom-tooltip-following"
@@ -276,7 +276,7 @@ const TokenImpactVisualization = ({ prediction }) => {
   )
 }
 
-// Text Heatmap Visualization Component
+// text heatmap visualization component
 const TextHeatmapVisualization = ({ prediction }) => {
   const [selectedToken, setSelectedToken] = useState(null)
   const wordHeatmap = useMemo(() => 
@@ -326,11 +326,11 @@ const StatisticsDashboard = ({ stats, predictions }) => {
   const [analysisMode, setAnalysisMode] = useState('all') // 'all' or 'single'
   const [selectedPrediction, setSelectedPrediction] = useState(null)
   
-  // Date range filter state for time series chart
+  // date range filter state for time series chart
   const [dateFilterStart, setDateFilterStart] = useState('')
   const [dateFilterEnd, setDateFilterEnd] = useState('')
   
-  // Get min and max dates from predictions for default date inputs
+  // get min and max dates from predictions for default date inputs
   const dateRange = useMemo(() => {
     if (!predictions || predictions.length === 0) return { min: '', max: '' }
     
@@ -344,8 +344,8 @@ const StatisticsDashboard = ({ stats, predictions }) => {
     }
   }, [predictions])
   
-  // Initialize date filters with full range when date range is available
-  // Only initialize once when dateRange becomes available
+  // initialize date filters with full range when date range is available
+  // only initialize once when dateRange becomes available
   useEffect(() => {
     if (dateRange.min && dateRange.max && !dateFilterStart && !dateFilterEnd) {
       setDateFilterStart(dateRange.min)
@@ -356,7 +356,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
   const chartData = useMemo(() => {
     if (!predictions || predictions.length === 0) return null
 
-    // Data for spam/safe distribution pie chart (all predictions)
+    // data for spam/safe distribution pie chart (all predictions)
     const spamCount = predictions.filter(p => p.is_spam).length
     const safeCount = predictions.filter(p => !p.is_spam).length
     const pieData = [
@@ -364,7 +364,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
       { name: 'Legitimate', value: safeCount, color: '#27ae60' }
     ]
 
-    // Data for probability distribution histogram (all predictions)
+    // data for probability distribution histogram (all predictions)
     const probabilityRanges = [
       { range: '0-20%', spam: 0, safe: 0 },
       { range: '20-40%', spam: 0, safe: 0 },
@@ -385,13 +385,13 @@ const StatisticsDashboard = ({ stats, predictions }) => {
       }
     })
 
-    // Filter predictions by date range for time series chart only
-    // Update chart when either date changes (not requiring both)
+    // filter predictions by date range for time series chart only
+    // update chart when either date changes (not requiring both)
     let filteredPredictions = predictions
     if (dateFilterStart || dateFilterEnd) {
       filteredPredictions = predictions.filter(pred => {
         const predDate = new Date(pred.timestamp)
-        predDate.setHours(0, 0, 0, 0) // Normalize to start of day for comparison
+        predDate.setHours(0, 0, 0, 0) // normalize to start of day for comparison
         
         if (dateFilterStart) {
           const startDate = new Date(dateFilterStart)
@@ -401,7 +401,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
         
         if (dateFilterEnd) {
           const endDate = new Date(dateFilterEnd)
-          endDate.setHours(23, 59, 59, 999) // Include the entire end date
+          endDate.setHours(23, 59, 59, 999) // include the entire end date
           if (predDate > endDate) return false
         }
         
@@ -409,18 +409,18 @@ const StatisticsDashboard = ({ stats, predictions }) => {
       })
     }
 
-    // Data for time series (predictions over time) - filtered by date range
+    // data for time series (predictions over time) - filtered by date range
     const timeSeriesData = {}
     filteredPredictions.forEach(pred => {
       const predDate = new Date(pred.timestamp)
-      // Use ISO date string (YYYY-MM-DD) for consistent sorting
+      // use ISO date string (YYYY-MM-DD) for consistent sorting
       const dateKey = predDate.toISOString().split('T')[0]
       const displayDate = predDate.toLocaleDateString()
       
       if (!timeSeriesData[dateKey]) {
         timeSeriesData[dateKey] = { 
           date: displayDate, 
-          dateKey: dateKey,  // Keep ISO format for sorting
+          dateKey: dateKey,  // keep ISO format for sorting
           spam: 0, 
           safe: 0 
         }
@@ -433,7 +433,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
     })
 
     const timeSeriesArray = Object.values(timeSeriesData)
-      .sort((a, b) => a.dateKey.localeCompare(b.dateKey))  // Sort by ISO date string (chronologically correct)
+      .sort((a, b) => a.dateKey.localeCompare(b.dateKey))  // sort by ISO date string (chronologically correct)
 
     return { pieData, probabilityRanges, timeSeriesArray, spamCount, safeCount }
   }, [predictions, dateFilterStart, dateFilterEnd])
@@ -458,7 +458,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
     window.URL.revokeObjectURL(url)
   }
 
-  // Show empty state when there are no predictions (similar to History page)
+  // show empty state when there are no predictions same as History
   if (!predictions || predictions.length === 0) {
     return (
       <div className="dashboard-container">
@@ -494,10 +494,10 @@ const StatisticsDashboard = ({ stats, predictions }) => {
 
   const handleModeChange = (mode) => {
     setAnalysisMode(mode)
-    setSelectedPrediction(null) // Reset selected prediction when switching modes
+    setSelectedPrediction(null) // reset selected prediction when switching modes
   }
 
-  // Single prediction analysis view
+  // single prediction analysis view
   if (analysisMode === 'single' && selectedPrediction) {
     return (
       <div className="dashboard-container">
@@ -508,7 +508,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
           </button>
         </div>
 
-        {/* Navigation Bar */}
+        {/* navigation bar */}
         <div className="dashboard-nav">
           <button
             onClick={handleBackToAll}
@@ -555,7 +555,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
             </div>
           </div>
 
-          {/* Visualization Components */}
+          {/* visualization components */}
           <TokenImpactVisualization prediction={selectedPrediction} />
           <TextHeatmapVisualization prediction={selectedPrediction} />
         </div>
@@ -574,7 +574,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
         )}
       </div>
 
-      {/* Navigation Bar */}
+      {/* navigation bar */}
       <div className="dashboard-nav">
         <button
           onClick={() => handleModeChange('all')}
@@ -652,7 +652,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
         </div>
       ) : (
         <div className="stats-grid">
-        {/* Chart 1: Pie Chart - Spam/Safe Distribution */}
+        {/* chart 1: pie chart - spam and legitimate distribution */}
         <div className="chart-card">
           <h3>Spam vs Legitimate Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -677,7 +677,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
           </ResponsiveContainer>
         </div>
 
-        {/* Chart 2: Bar Chart - Probability Distribution */}
+        {/* chart 2: bar chart probability distribution */}
         <div className="chart-card">
           <h3>Spam Probability Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -693,7 +693,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
           </ResponsiveContainer>
         </div>
 
-        {/* Chart 3: Line Chart - Time Series */}
+        {/* chart 3: line chart time series */}
         <div className="chart-card full-width">
           <div className="chart-header-with-filter">
             <h3>Predictions Over Time</h3>

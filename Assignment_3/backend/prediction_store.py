@@ -8,7 +8,7 @@ from datetime import datetime
 import sys
 from pathlib import Path
 
-# Add parent directory to path for imports
+# add parent directory to path for imports
 parent_dir = Path(__file__).parent.parent
 if str(parent_dir) not in sys.path:
     sys.path.insert(0, str(parent_dir))
@@ -17,7 +17,7 @@ from backend.model_service import ModelService
 
 from pydantic import BaseModel
 
-# Import PredictionResponse schema
+# import PredictionResponse schema
 class PredictionResponse(BaseModel):
     prediction_id: str
     text: str
@@ -55,7 +55,7 @@ class PredictionStore:
             return None
         
         data = self._predictions[prediction_id].copy()
-        # Truncate text for response
+        # truncate text for response
         if len(data['text']) > 100:
             data['text'] = data['text'][:100] + "..."
         
@@ -63,21 +63,21 @@ class PredictionStore:
     
     def get_all_predictions(self, limit: int = 50, offset: int = 0) -> List[PredictionResponse]:
         """Get all predictions with pagination"""
-        # Sort by timestamp (newest first)
+        # sort by timestamp (newest first)
         sorted_predictions = sorted(
             self._predictions.values(),
             key=lambda x: x['timestamp'],
             reverse=True
         )
         
-        # Apply pagination
+        # apply pagination
         paginated = sorted_predictions[offset:offset + limit]
         
-        # Convert to response models
+        # convert to response models
         results = []
         for pred in paginated:
             data = pred.copy()
-            # Truncate text for response
+            # truncate text for response
             if len(data['text']) > 100:
                 data['text'] = data['text'][:100] + "..."
             results.append(PredictionResponse(**data))
@@ -106,12 +106,12 @@ class PredictionStore:
         spam_count = sum(1 for p in self._predictions.values() if p['is_spam'])
         safe_count = total - spam_count
         
-        # Calculate accuracy from feedback
+        # calculate accuracy from feedback
         feedback_count = sum(1 for p in self._predictions.values() if p['feedback'] == 'correct')
         total_feedback = sum(1 for p in self._predictions.values() if p['feedback'] is not None)
         accuracy = (feedback_count / total_feedback * 100) if total_feedback > 0 else 0.0
         
-        # Get recent predictions (last 10)
+        # get recent predictions (last 10)
         sorted_predictions = sorted(
             self._predictions.values(),
             key=lambda x: x['timestamp'],

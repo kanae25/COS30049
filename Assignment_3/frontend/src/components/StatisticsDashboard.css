@@ -134,7 +134,7 @@
   font-size: 1.1rem;
 }
 
-/* Navigation Bar */
+/* navigation bar */
 .dashboard-nav {
   display: flex;
   gap: 15px;
@@ -165,7 +165,7 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Back Button */
+/* back button */
 .back-btn {
   padding: 10px 20px;
   background: white;
@@ -184,7 +184,7 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Predictions List View */
+/* predictions list view */
 .predictions-list-view {
   width: 100%;
 }
@@ -326,7 +326,7 @@
   font-weight: 700;
 }
 
-/* Single Prediction Analysis */
+/* single prediction analysis */
 .single-prediction-info {
   display: flex;
   flex-direction: column;
@@ -403,7 +403,7 @@
   }
 }
 
-/* Visualization Styles */
+/* visualization styles */
 .visualization-description {
   color: #666;
   font-size: 0.9rem;
@@ -451,7 +451,7 @@
   color: #333;
 }
 
-/* Text Heatmap */
+/* text heatmap */
 .text-heatmap {
   background: white;
   padding: 20px;
@@ -473,7 +473,7 @@
   outline: 2px solid #667eea;
 }
 
-/* Date Filter Styles */
+/* date filter styles */
 .chart-header-with-filter {
   display: flex;
   justify-content: space-between;

@@ -12,7 +12,7 @@ import numpy as np
 from typing import Dict, Optional
 import warnings
 
-# Suppress scikit-learn version mismatch warnings (model compatibility)
+# suppress scikit-learn warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
 
 
@@ -46,11 +46,11 @@ class ModelService:
                 print("Please ensure the model is packaged in assignment_3/models/ from Assignment 2.")
                 return
             
-            # Load model
+            # load model
             self.model = joblib.load(model_path)
             self.model_path = model_path
             
-            # Load metadata if available
+            # load metadata if available
             if metadata_path.exists():
                 with open(metadata_path, 'r') as f:
                     self.metadata = json.load(f)
@@ -97,18 +97,18 @@ class ModelService:
             raise ValueError("Input text cannot be empty")
         
         try:
-            # Get prediction probabilities
+            # get prediction probabilities
             probabilities = self.model.predict_proba([text])[0]
             
-            # Get prediction class
+            # get prediction class
             prediction = self.model.predict([text])[0]
             
-            # Extract probabilities
+            # extract probabilities
             # Class 0 = safe (legitimate), Class 1 = spam
             safe_prob = float(probabilities[0])
             spam_prob = float(probabilities[1])
             
-            # Determine if spam (1 = spam, 0 = safe)
+            # determine if spam (1 = spam, 0 = safe)
             is_spam = bool(prediction == 1)
             
             return {

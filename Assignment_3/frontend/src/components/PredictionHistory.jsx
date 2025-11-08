@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import './PredictionHistory.css'
 
 const PredictionHistory = ({ predictions, onDelete, onRefresh, onGenerateSampleData, loading, stats }) => {
-  // Calculate summary statistics
+  // calc summary statistics
   const summaryStats = useMemo(() => {
     if (!predictions || predictions.length === 0) {
       return { total: 0, spamCount: 0, safeCount: 0 }
@@ -67,7 +67,7 @@ const PredictionHistory = ({ predictions, onDelete, onRefresh, onGenerateSampleD
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* summary cards */}
       <div className="stats-grid">
         <div className="stat-card total">
           <h3>Total Predictions</h3>

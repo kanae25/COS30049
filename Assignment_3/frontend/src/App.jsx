@@ -14,7 +14,7 @@ function App() {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('predict')
 
-  // Use relative URL in development (Vite proxy) or environment variable for production
+  // use relative URL in development or environment variable for production
   const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 
   useEffect(() => {
@@ -64,7 +64,7 @@ function App() {
           const errorData = await response.json()
           errorMessage = errorData.detail || errorMessage
         } catch (e) {
-          // If response is not JSON, use status text
+          // if response is not JSON use status text
           errorMessage = response.statusText || errorMessage
         }
         throw new Error(errorMessage)
@@ -73,11 +73,11 @@ function App() {
       const data = await response.json()
       setPrediction(data)
       
-      // Refresh stats and predictions
+      // refresh stats and predictions
       await Promise.all([fetchStats(), fetchPredictions()])
       
-      // Keep user on predict tab (results are shown there)
-      // Scroll to results after a brief delay to allow render
+      // keep user on predict tab (results are shown there)
+      // scroll to results after a brief delay to allow render
       setTimeout(() => {
         const resultsElement = document.querySelector('.prediction-results')
         if (resultsElement) {
@@ -85,7 +85,7 @@ function App() {
         }
       }, 100)
     } catch (err) {
-      // Provide more helpful error messages
+      // provide more helpful error messages
       if (err.message.includes('Failed to fetch') || err.message.includes('Load failed') || err.name === 'TypeError') {
         setError('Cannot connect to backend server. Please make sure the backend is running on http://localhost:8000')
       } else {
@@ -105,7 +105,7 @@ function App() {
 
       if (response.ok) {
         await Promise.all([fetchStats(), fetchPredictions()])
-        // Clear current prediction if it was deleted
+        // clear current prediction if it was deleted
         if (prediction && prediction.prediction_id === predictionId) {
           setPrediction(null)
         }
@@ -137,7 +137,7 @@ function App() {
         throw new Error(errorMessage)
       }
 
-      // Refresh stats and predictions after generating sample data
+      // refresh stats and predictions after generating sample data
       await Promise.all([fetchStats(), fetchPredictions()])
     } catch (err) {
       if (err.message.includes('Failed to fetch') || err.message.includes('Load failed') || err.name === 'TypeError') {
