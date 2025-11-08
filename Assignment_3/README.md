@@ -22,16 +22,36 @@ The application runs independently and does not require Assignment 2 to be prese
 
 ### 1. Setup Python Environment
 
+**Linux/macOS:**
 ```bash
 cd assignment_3
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 
 # Install Python dependencies
 pip install -r requirements.txt
 ```
+
+**Windows (PowerShell):**
+```powershell
+cd assignment_3
+
+# Create virtual environment
+python -m venv venv
+
+# Fix PowerShell execution policy (if needed)
+Set-ExecutionPolicy Bypass -Scope Process
+
+# Activate virtual environment
+venv\Scripts\Activate
+
+# Install Python dependencies
+pip install -r requirements.txt
+```
+
+**Note:** If you encounter execution policy errors on Windows, run `Set-ExecutionPolicy Bypass -Scope Process` before activating the virtual environment.
 
 **Note:** Frontend dependencies (npm packages) will be automatically installed when you run `python main.py`. No need to run `npm install` manually!
 
@@ -56,9 +76,18 @@ cp ../Assignment_2/outputs/models/model_metadata.json models/
 
 Start both backend and frontend with a single command:
 
+**Linux/macOS:**
 ```bash
 cd assignment_3
 source venv/bin/activate
+python main.py
+```
+
+**Windows (PowerShell):**
+```powershell
+cd assignment_3
+Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
+venv\Scripts\Activate
 python main.py
 ```
 
@@ -73,9 +102,20 @@ Press `Ctrl+C` to stop both servers.
 If you prefer to run them separately:
 
 **Terminal 1 (Backend):**
+
+**Linux/macOS:**
 ```bash
 cd assignment_3
 source venv/bin/activate
+cd backend
+uvicorn main:app --reload --port 8000
+```
+
+**Windows (PowerShell):**
+```powershell
+cd assignment_3
+Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
+venv\Scripts\Activate
 cd backend
 uvicorn main:app --reload --port 8000
 ```
@@ -176,6 +216,15 @@ Dependencies are managed in `frontend/package.json`. They are **automatically in
 - **Predictions fail**: Check backend logs for model loading errors
 - **CORS errors**: Backend CORS is configured for localhost:5173 and localhost:3000
 
+### Windows Issues
+
+- **PowerShell execution policy error**: If you encounter "cannot be loaded because running scripts is disabled" error when activating the virtual environment, run:
+  ```powershell
+  Set-ExecutionPolicy Bypass -Scope Process
+  ```
+  This bypasses the execution policy for the current PowerShell session only (safe and temporary).
+- **Virtual environment activation fails**: Make sure you're using PowerShell (not Command Prompt) and run the execution policy command above before activation.
+
 ## Important Notes
 
 1. **Single command startup**: Use `python main.py` to start both servers at once
@@ -191,17 +240,39 @@ Dependencies are managed in `frontend/package.json`. They are **automatically in
 
 ### Start Both Servers (Recommended)
 
+**Linux/macOS:**
 ```bash
 cd assignment_3
 source venv/bin/activate
 python main.py
 ```
 
+**Windows (PowerShell):**
+```powershell
+cd assignment_3
+Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
+venv\Scripts\Activate
+python main.py
+```
+
 ### Start Servers Separately (for debugging)
 
 **Backend only:**
+
+**Linux/macOS:**
 ```bash
-cd assignment_3/backend
+cd assignment_3
+source venv/bin/activate
+cd backend
+uvicorn main:app --reload --port 8000
+```
+
+**Windows (PowerShell):**
+```powershell
+cd assignment_3
+Set-ExecutionPolicy Bypass -Scope Process  # Only needed if you encounter execution policy errors
+venv\Scripts\Activate
+cd backend
 uvicorn main:app --reload --port 8000
 ```
 
