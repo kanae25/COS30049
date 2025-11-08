@@ -16,17 +16,17 @@ from datetime import datetime
 import uuid
 import warnings
 
-# Suppress scikit-learn version mismatch warnings (model compatibility)
+# silence scikit-learn warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
 
-# Add parent directory to path for imports
+# add parent directory for imports
 parent_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(parent_dir))
 
 from backend.model_service import ModelService
 from backend.prediction_store import PredictionStore
 
-# Initialize FastAPI app
+# initialize FastAPI 
 app = FastAPI(
     title="ShieldMail API",
     description="Spam Detection API for ShieldMail Web Application",
@@ -42,11 +42,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize services
+# initialize services
 model_service = ModelService()
 prediction_store = PredictionStore()
 
-# Pydantic models for request/response validation
+# pydantic models for request n response validation
 class PredictionRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=50000, description="Email text to analyze")
     
@@ -90,7 +90,7 @@ class PredictionStatsResponse(BaseModel):
     accuracy_feedback: float
     recent_predictions: List[PredictionResponse]
 
-# Root endpoint
+# root endpoint
 @app.get("/", tags=["General"])
 async def root():
     """Root endpoint providing API information"""
@@ -111,7 +111,7 @@ async def root():
         }
     }
 
-# Health check endpoint
+# health check endpoint
 @app.get("/api/health", tags=["General"])
 async def health_check():
     """
@@ -133,8 +133,8 @@ async def health_check():
             detail=f"Service unhealthy: {str(e)}"
         )
 
-# Model information endpoint
-# Generate sample data endpoint - POST
+# model information endpoint
+# generate sample data endpoint via POST
 @app.post("/api/generate-sample-data", tags=["Predictions"], status_code=status.HTTP_201_CREATED)
 async def generate_sample_data():
     """
@@ -156,10 +156,10 @@ async def generate_sample_data():
                 detail="Model not loaded. Please train and save the model first."
             )
         
-        # Get current year
+        # get current year
         current_year = datetime.now().year
         
-        # Define sample data with dates and desired labels
+        # define sample data with dates and desired labels
         sample_data = [
             {
                 'text': 'Hello, I hope this email finds you well. I wanted to follow up on our previous discussion about the project timeline. Please let me know if you have any questions.',
@@ -190,16 +190,16 @@ async def generate_sample_data():
         
         created_predictions = []
         
-        # Define unique probabilities for each prediction
-        # Safe predictions: low spam probability (0.15, 0.20, 0.25, 0.30, 0.35)
-        # Spam predictions: high spam probability (0.65, 0.70, 0.75, 0.80, 0.85)
+        # define unique probabilities for each prediction
+        # safe predictions: low spam probability (0.15, 0.20, 0.25, 0.30, 0.35)
+        # spam predictions: high spam probability (0.65, 0.70, 0.75, 0.80, 0.85)
         unique_probabilities = [0.15, 0.65, 0.70, 0.20, 0.75]  # Matching the order of sample_data
         
         for idx, sample in enumerate(sample_data):
-            # Get prediction from model (for text processing, but we'll override the result)
+            # get prediction from model 
             model_result = model_service.predict(sample['text'])
             
-            # Override with desired label and unique probability
+            # override with desired label and unique probability
             spam_prob = unique_probabilities[idx]
             ham_prob = 1.0 - spam_prob
             is_spam = sample['desired_label'] == 'spam'
@@ -210,7 +210,7 @@ async def generate_sample_data():
                 'ham_probability': ham_prob
             }
             
-            # Create prediction
+            # create prediction
             prediction_id = str(uuid.uuid4())
             prediction_response = PredictionResponse(
                 prediction_id=prediction_id,
@@ -222,7 +222,7 @@ async def generate_sample_data():
                 model_metadata=model_service.get_metadata()
             )
             
-            # Store prediction with custom timestamp
+            # store prediction with custom timestamp
             prediction_store.add_prediction(prediction_id, sample['text'], result, custom_timestamp=sample['date'])
             
             created_predictions.append(prediction_response)
@@ -258,7 +258,7 @@ async def get_model_info():
             detail=f"Failed to get model info: {str(e)}"
         )
 
-# Prediction endpoint - POST
+# prediction endpoint via POST
 @app.post("/api/predict", response_model=PredictionResponse, tags=["Predictions"], status_code=status.HTTP_201_CREATED)
 async def predict_spam(request: PredictionRequest):
     """
@@ -275,10 +275,10 @@ async def predict_spam(request: PredictionRequest):
                 detail="Model not loaded. Please train and save the model first."
             )
         
-        # Get prediction
+        # get prediction
         result = model_service.predict(request.text)
         
-        # Create prediction response
+        # create prediction response
         prediction_id = str(uuid.uuid4())
         prediction_response = PredictionResponse(
             prediction_id=prediction_id,
@@ -290,7 +290,7 @@ async def predict_spam(request: PredictionRequest):
             model_metadata=model_service.get_metadata()
         )
         
-        # Store prediction (with custom timestamp if provided)
+        # store prediction (with custom timestamp if provided)
         custom_timestamp = getattr(request, 'timestamp', None)
         prediction_store.add_prediction(prediction_id, request.text, result, custom_timestamp=custom_timestamp)
         
@@ -307,7 +307,7 @@ async def predict_spam(request: PredictionRequest):
             detail=f"Prediction failed: {str(e)}"
         )
 
-# Batch prediction endpoint - POST
+# batch prediction endpoint via POST
 @app.post("/api/batch-predict", response_model=BatchPredictionResponse, tags=["Predictions"])
 async def batch_predict_spam(request: BatchPredictionRequest):
     """
@@ -368,7 +368,7 @@ async def batch_predict_spam(request: BatchPredictionRequest):
             detail=f"Batch prediction failed: {str(e)}"
         )
 
-# Get all predictions - GET
+# get all predictions via GET
 @app.get("/api/predictions", response_model=List[PredictionResponse], tags=["Predictions"])
 async def get_predictions(limit: Optional[int] = 50, offset: Optional[int] = 0):
     """
@@ -392,7 +392,7 @@ async def get_predictions(limit: Optional[int] = 50, offset: Optional[int] = 0):
             detail=f"Failed to retrieve predictions: {str(e)}"
         )
 
-# Get prediction by ID - GET
+# get prediction by ID via GET
 @app.get("/api/predictions/{prediction_id}", response_model=PredictionResponse, tags=["Predictions"])
 async def get_prediction_by_id(prediction_id: str):
     """
@@ -452,7 +452,7 @@ async def update_prediction(prediction_id: str, request: UpdatePredictionRequest
             detail=f"Failed to update prediction: {str(e)}"
         )
 
-# Delete prediction - DELETE
+# delete prediction via DELETE
 @app.delete("/api/predictions/{prediction_id}", tags=["Predictions"])
 async def delete_prediction(prediction_id: str):
     """
@@ -483,7 +483,7 @@ async def delete_prediction(prediction_id: str):
             detail=f"Failed to delete prediction: {str(e)}"
         )
 
-# Get statistics - GET
+# get statistics via GET
 @app.get("/api/stats", response_model=PredictionStatsResponse, tags=["Statistics"])
 async def get_stats():
     """
@@ -502,7 +502,7 @@ async def get_stats():
             detail=f"Failed to retrieve statistics: {str(e)}"
         )
 
-# Global exception handler
+# global exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler for unhandled exceptions"""

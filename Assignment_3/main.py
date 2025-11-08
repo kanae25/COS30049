@@ -55,7 +55,7 @@ def install_frontend_dependencies():
             print(result.stdout)
             return False
         
-        print("✓ Frontend dependencies installed successfully")
+        print("Frontend dependencies installed successfully")
         print("=" * 60)
         return True
         
@@ -103,7 +103,7 @@ def check_dependencies():
         print("ERROR: Missing Dependencies")
         print("=" * 60)
         for error in errors:
-            print(f"  ✗ {error}")
+            print(f"  X {error}")
         print("=" * 60)
         return False
     
@@ -144,7 +144,7 @@ def start_backend():
         print("ERROR: Backend failed to start!")
         return False
     
-    print("✓ Backend started: http://localhost:8000")
+    print("Backend started: http://localhost:8000")
     print("  API Docs: http://localhost:8000/docs")
     return True
 
@@ -182,7 +182,7 @@ def start_frontend():
         print("ERROR: Frontend failed to start!")
         return False
     
-    print("✓ Frontend started: http://localhost:5173")
+    print("Frontend started: http://localhost:5173")
     return True
 
 
@@ -201,7 +201,7 @@ def cleanup(signum=None, frame=None):
             backend_process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             backend_process.kill()
-        print("✓ Backend stopped")
+        print("Backend stopped")
     
     if frontend_process:
         print("Stopping frontend...")
@@ -210,7 +210,7 @@ def cleanup(signum=None, frame=None):
             frontend_process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             frontend_process.kill()
-        print("✓ Frontend stopped")
+        print("Frontend stopped")
     
     print("=" * 60)
     sys.exit(0)
@@ -218,7 +218,7 @@ def cleanup(signum=None, frame=None):
 
 def main():
     """Main function to start the application"""
-    # Register signal handlers for graceful shutdown
+    # register signal handlers for shutdown
     signal.signal(signal.SIGINT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
     
@@ -227,19 +227,19 @@ def main():
     print("=" * 60)
     print()
     
-    # Check dependencies
+    # check dependencies
     if not check_dependencies():
         sys.exit(1)
     
-    # Start backend
+    # start backend
     if not start_backend():
         cleanup()
         sys.exit(1)
     
-    # Small delay between starts
+    # small delay between starts
     time.sleep(1)
     
-    # Start frontend
+    # start frontend
     if not start_frontend():
         cleanup()
         sys.exit(1)
@@ -255,10 +255,10 @@ def main():
     print("=" * 60)
     print()
     
-    # Keep the main process alive
+        # keep the main process alive
     try:
         while True:
-            # Check if processes are still running
+            # check if processes are still running
             if backend_process and backend_process.poll() is not None:
                 print("ERROR: Backend process died!")
                 cleanup()
