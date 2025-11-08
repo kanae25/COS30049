@@ -458,12 +458,13 @@ const StatisticsDashboard = ({ stats, predictions }) => {
     window.URL.revokeObjectURL(url)
   }
 
-  if (!stats && (!predictions || predictions.length === 0)) {
+  // Show empty state when there are no predictions (similar to History page)
+  if (!predictions || predictions.length === 0) {
     return (
       <div className="dashboard-container">
         <div className="card">
           <h2>Statistics Dashboard</h2>
-          <p className="no-data">No prediction data available yet. Make some predictions to see statistics.</p>
+          <p className="no-data">Make some predictions for analyzation and data visualization generation.</p>
         </div>
       </div>
     )

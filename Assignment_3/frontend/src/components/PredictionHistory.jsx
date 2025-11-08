@@ -146,7 +146,7 @@ const PredictionHistory = ({ predictions, onDelete, onRefresh, onGenerateSampleD
               <div className="prediction-feedback">
                 <span className="feedback-label">Feedback:</span>
                 <span className={`feedback-value ${prediction.feedback}`}>
-                  {prediction.feedback === 'correct' ? '✓ Correct' : '✗ Incorrect'}
+                  {prediction.feedback === 'correct' ? 'Correct' : 'Incorrect'}
                 </span>
               </div>
             )}
