@@ -7,7 +7,7 @@
 Assignment 3 is a complete, standalone web application that includes:
 - **FastAPI backend** with AI model integration
 - **React.js frontend** with interactive visualizations
-- **Packaged AI model** from Assignment 2 (included in `models/` directory)
+- **Packaged AI model** from Assignment 2 (included in `backend/models/` directory)
 - **Standalone dependencies** - no dependency on Assignment 2
 
 The application runs independently and does not require Assignment 2 to be present.
@@ -16,7 +16,7 @@ The application runs independently and does not require Assignment 2 to be prese
 
 - **Python 3.8+**
 - **Node.js 16+** and npm
-- **AI model** in `models/spam_detection_model.pkl` (should already be packaged)
+- **AI model** in `backend/models/spam_detection_model.pkl` (should already be packaged)
 
 ## Quick Start
 
@@ -113,6 +113,9 @@ npm run dev
 ```
 Assignment_3/
 ├── backend/                    # FastAPI backend
+│   ├── models/                 # Packaged AI model from Assignment 2
+│   │   ├── spam_detection_model.pkl
+│   │   └── model_metadata.json
 │   ├── main.py                # API endpoints
 │   ├── model_service.py       # AI model loader (packaged from Assignment 2)
 │   └── prediction_store.py    # In-memory prediction storage
@@ -123,9 +126,6 @@ Assignment_3/
 │   │   └── main.jsx          # Entry point
 │   ├── package.json
 │   └── vite.config.js
-├── models/                     # Packaged AI model from Assignment 2
-│   ├── spam_detection_model.pkl
-│   └── model_metadata.json
 ├── main.py                     # Main entry point (starts both servers)
 └── requirements.txt            # Python dependencies (standalone)
 ```
@@ -164,7 +164,7 @@ Dependencies are managed in `frontend/package.json`. They are **automatically in
 
 ### Backend Issues
 
-- **Model not found**: Ensure `models/spam_detection_model.pkl` exists
+- **Model not found**: Ensure `backend/models/spam_detection_model.pkl` exists
 - **Import errors**: Activate virtual environment and run `pip install -r requirements.txt`
 - **Port 8000 in use**: Change port: `uvicorn main:app --reload --port 8001`
 
@@ -207,7 +207,7 @@ Dependencies are managed in `frontend/package.json`. They are **automatically in
 3. **Backend shows text/JSON**: This is normal - it's an API server, not a UI
 4. **Frontend shows the UI**: Open the URL (http://localhost:5173) in your browser
 5. **Standalone execution**: Assignment 3 runs independently - no Assignment 2 needed
-6. **Model packaging**: The AI model from Assignment 2 is packaged in `models/` directory
+6. **Model packaging**: The AI model from Assignment 2 is packaged in `backend/models/` directory
 7. **Own dependencies**: Assignment 3 has its own `requirements.txt` - no dependency on Assignment 2
 8. **Graceful shutdown**: Press `Ctrl+C` to stop both servers cleanly
 
@@ -215,7 +215,7 @@ Dependencies are managed in `frontend/package.json`. They are **automatically in
 
 - **Standalone execution**: No dependency on Assignment 2 at runtime
 - **Standalone dependencies**: Own `requirements.txt` - no reference to Assignment 2
-- **Packaged AI model**: Model from Assignment 2 included in `models/` directory
+- **Packaged AI model**: Model from Assignment 2 included in `backend/models/` directory
 - **FastAPI backend**: RESTful API with multiple HTTP methods (GET, POST, PUT, DELETE)
 - **React.js frontend**: Interactive UI with data visualizations
 - **Error handling**: Comprehensive error handling and input validation

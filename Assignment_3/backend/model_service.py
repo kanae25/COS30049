@@ -37,13 +37,13 @@ class ModelService:
         This model was trained in Assignment 2 and packaged for Assignment 3.
         """
         try:
-            script_dir = Path(__file__).parent.parent  # assignment_3 directory
+            script_dir = Path(__file__).parent  # backend directory
             model_path = script_dir / "models" / "spam_detection_model.pkl"
             metadata_path = script_dir / "models" / "model_metadata.json"
             
             if not model_path.exists():
                 print(f"Warning: Model not found at {model_path}")
-                print("Please ensure the model is packaged in assignment_3/models/ from Assignment 2.")
+                print("Please ensure the model is packaged in backend/models/ from Assignment 2.")
                 return
             
             # load model
@@ -91,7 +91,7 @@ class ModelService:
             - safe_probability: float - Probability of being legitimate (0-1)
         """
         if not self.is_model_loaded():
-            raise ValueError("Model is not loaded. Please ensure the model is packaged in assignment_3/models/.")
+            raise ValueError("Model is not loaded. Please ensure the model is packaged in backend/models/.")
         
         if not text or not text.strip():
             raise ValueError("Input text cannot be empty")

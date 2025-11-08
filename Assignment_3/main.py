@@ -81,7 +81,7 @@ def check_dependencies():
         errors.append("Python dependencies missing. Run: pip install -r requirements.txt")
     
     # Check if model exists
-    model_path = SCRIPT_DIR / "models" / "spam_detection_model.pkl"
+    model_path = BACKEND_DIR / "models" / "spam_detection_model.pkl"
     if not model_path.exists():
         errors.append(f"Model not found at {model_path}. Please ensure model is packaged.")
     
