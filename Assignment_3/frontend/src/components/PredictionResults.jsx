@@ -5,17 +5,17 @@ const PredictionResults = ({ prediction }) => {
   if (!prediction) return null
 
   const spamPercentage = (prediction.spam_probability * 100).toFixed(2)
-  const hamPercentage = (prediction.ham_probability * 100).toFixed(2)
+  const safePercentage = (prediction.safe_probability * 100).toFixed(2)
   const isSpam = prediction.is_spam
 
   return (
     <div className="prediction-results">
-      <div className={`card result-card ${isSpam ? 'spam' : 'ham'}`}>
+      <div className={`card result-card ${isSpam ? 'spam' : 'safe'}`}>
         <div className="result-header">
-          <h2 className={isSpam ? 'spam-title' : 'ham-title'}>
+          <h2 className={isSpam ? 'spam-title' : 'safe-title'}>
             {isSpam ? 'Spam Detected' : 'Legitimate Email'}
           </h2>
-          <div className={`status-badge ${isSpam ? 'spam-badge' : 'ham-badge'}`}>
+          <div className={`status-badge ${isSpam ? 'spam-badge' : 'safe-badge'}`}>
             {isSpam ? 'SPAM' : 'SAFE'}
           </div>
         </div>
@@ -26,9 +26,9 @@ const PredictionResults = ({ prediction }) => {
               <span className="prob-label">Spam Probability</span>
               <span className="prob-value">{spamPercentage}%</span>
             </div>
-            <div className="prob-item ham-prob">
-              <span className="prob-label">Ham Probability</span>
-              <span className="prob-value">{hamPercentage}%</span>
+            <div className="prob-item safe-prob">
+              <span className="prob-label">Safe Probability</span>
+              <span className="prob-value">{safePercentage}%</span>
             </div>
           </div>
           
@@ -38,8 +38,8 @@ const PredictionResults = ({ prediction }) => {
               style={{ width: `${spamPercentage}%` }}
             />
             <div 
-              className="prob-bar-ham" 
-              style={{ width: `${hamPercentage}%` }}
+              className="prob-bar-safe" 
+              style={{ width: `${safePercentage}%` }}
             />
           </div>
         </div>

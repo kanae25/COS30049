@@ -23,7 +23,7 @@ class PredictionResponse(BaseModel):
     text: str
     is_spam: bool
     spam_probability: float
-    ham_probability: float
+    safe_probability: float
     timestamp: str
     model_metadata: Dict
     feedback: Optional[str] = None
@@ -43,7 +43,7 @@ class PredictionStore:
             'text': text,
             'is_spam': result['is_spam'],
             'spam_probability': result['spam_probability'],
-            'ham_probability': result['ham_probability'],
+            'safe_probability': result['safe_probability'],
             'timestamp': timestamp,
             'model_metadata': self._model_service.get_metadata(),
             'feedback': None
@@ -104,7 +104,7 @@ class PredictionStore:
         """Get statistics about predictions"""
         total = len(self._predictions)
         spam_count = sum(1 for p in self._predictions.values() if p['is_spam'])
-        ham_count = total - spam_count
+        safe_count = total - spam_count
         
         # Calculate accuracy from feedback
         feedback_count = sum(1 for p in self._predictions.values() if p['feedback'] == 'correct')
@@ -129,7 +129,7 @@ class PredictionStore:
         return {
             'total_predictions': total,
             'spam_count': spam_count,
-            'ham_count': ham_count,
+            'safe_count': safe_count,
             'accuracy_feedback': round(accuracy, 2),
             'recent_predictions': recent_responses
         }

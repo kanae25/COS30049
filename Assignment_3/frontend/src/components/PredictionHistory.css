@@ -64,7 +64,7 @@
   color: #e74c3c;
 }
 
-.stat-card.ham .stat-value {
+.stat-card.safe .stat-value {
   color: #27ae60;
 }
 
@@ -137,7 +137,7 @@
   background: linear-gradient(to right, #fee 0%, white 5%);
 }
 
-.prediction-item.ham {
+.prediction-item.safe {
   border-left-color: #27ae60;
   background: linear-gradient(to right, #efe 0%, white 5%);
 }
@@ -172,7 +172,7 @@
   border: 2px solid #e74c3c;
 }
 
-.ham-badge {
+.safe-badge {
   background: #efe;
   color: #27ae60;
   border: 2px solid #27ae60;
@@ -242,7 +242,7 @@
   color: #e74c3c;
 }
 
-.detail-value.ham {
+.detail-value.safe {
   color: #27ae60;
 }
 

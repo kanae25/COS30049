@@ -88,7 +88,7 @@ class ModelService:
             Dictionary with prediction results:
             - is_spam: bool - True if spam, False if legitimate
             - spam_probability: float - Probability of being spam (0-1)
-            - ham_probability: float - Probability of being legitimate (0-1)
+            - safe_probability: float - Probability of being legitimate (0-1)
         """
         if not self.is_model_loaded():
             raise ValueError("Model is not loaded. Please ensure the model is packaged in assignment_3/models/.")
@@ -104,17 +104,17 @@ class ModelService:
             prediction = self.model.predict([text])[0]
             
             # Extract probabilities
-            # Class 0 = ham (legitimate), Class 1 = spam
-            ham_prob = float(probabilities[0])
+            # Class 0 = safe (legitimate), Class 1 = spam
+            safe_prob = float(probabilities[0])
             spam_prob = float(probabilities[1])
             
-            # Determine if spam (1 = spam, 0 = ham)
+            # Determine if spam (1 = spam, 0 = safe)
             is_spam = bool(prediction == 1)
             
             return {
                 'is_spam': is_spam,
                 'spam_probability': spam_prob,
-                'ham_probability': ham_prob
+                'safe_probability': safe_prob
             }
             
         except Exception as e:

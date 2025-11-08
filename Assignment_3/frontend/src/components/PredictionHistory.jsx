@@ -5,27 +5,27 @@ const PredictionHistory = ({ predictions, onDelete, onRefresh, onGenerateSampleD
   // Calculate summary statistics
   const summaryStats = useMemo(() => {
     if (!predictions || predictions.length === 0) {
-      return { total: 0, spamCount: 0, hamCount: 0 }
+      return { total: 0, spamCount: 0, safeCount: 0 }
     }
     const spamCount = predictions.filter(p => p.is_spam).length
-    const hamCount = predictions.length - spamCount
+    const safeCount = predictions.length - spamCount
     return {
       total: predictions.length,
       spamCount,
-      hamCount
+      safeCount
     }
   }, [predictions])
   const exportHistory = () => {
     if (!predictions || predictions.length === 0) return
 
     const csvContent = [
-      ['Prediction ID', 'Text', 'Is Spam', 'Spam Probability', 'Ham Probability', 'Timestamp'],
+      ['Prediction ID', 'Text', 'Is Spam', 'Spam Probability', 'Safe Probability', 'Timestamp'],
       ...predictions.map(p => [
         p.prediction_id,
         `"${p.text.replace(/"/g, '""')}"`,
         p.is_spam ? 'Yes' : 'No',
         (p.spam_probability * 100).toFixed(2) + '%',
-        (p.ham_probability * 100).toFixed(2) + '%',
+        (p.safe_probability * 100).toFixed(2) + '%',
         p.timestamp
       ])
     ].map(row => row.join(',')).join('\n')
@@ -82,12 +82,12 @@ const PredictionHistory = ({ predictions, onDelete, onRefresh, onGenerateSampleD
             </div>
           )}
         </div>
-        <div className="stat-card ham">
+        <div className="stat-card safe">
           <h3>Legitimate</h3>
-          <div className="stat-value">{summaryStats.hamCount}</div>
+          <div className="stat-value">{summaryStats.safeCount}</div>
           {summaryStats.total > 0 && (
             <div className="stat-percentage">
-              {((summaryStats.hamCount / summaryStats.total) * 100).toFixed(1)}%
+              {((summaryStats.safeCount / summaryStats.total) * 100).toFixed(1)}%
             </div>
           )}
         </div>
@@ -97,11 +97,11 @@ const PredictionHistory = ({ predictions, onDelete, onRefresh, onGenerateSampleD
         {predictions.map((prediction) => (
           <div 
             key={prediction.prediction_id} 
-            className={`prediction-item ${prediction.is_spam ? 'spam' : 'ham'}`}
+            className={`prediction-item ${prediction.is_spam ? 'spam' : 'safe'}`}
           >
             <div className="prediction-header">
               <div className="prediction-status">
-                <span className={`status-badge ${prediction.is_spam ? 'spam-badge' : 'ham-badge'}`}>
+                <span className={`status-badge ${prediction.is_spam ? 'spam-badge' : 'safe-badge'}`}>
                   {prediction.is_spam ? 'SPAM' : 'SAFE'}
                 </span>
                 <span className="prediction-id">
@@ -129,9 +129,9 @@ const PredictionHistory = ({ predictions, onDelete, onRefresh, onGenerateSampleD
                 </span>
               </div>
               <div className="detail-item">
-                <span className="detail-label">Ham Probability:</span>
-                <span className={`detail-value ham ${!prediction.is_spam ? 'highlight' : ''}`}>
-                  {(prediction.ham_probability * 100).toFixed(2)}%
+                <span className="detail-label">Safe Probability:</span>
+                <span className={`detail-value safe ${!prediction.is_spam ? 'highlight' : ''}`}>
+                  {(prediction.safe_probability * 100).toFixed(2)}%
                 </span>
               </div>
               <div className="detail-item">

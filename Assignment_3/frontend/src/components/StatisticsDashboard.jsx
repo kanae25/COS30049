@@ -39,7 +39,7 @@ const generateTokenImpacts = (text, isSpam, spamProbability) => {
   
   const uniqueWords = [...new Set(words)]
     .map(word => {
-      // Calculate impact based on spam indicators, ham indicators, and word frequency
+      // Calculate impact based on spam indicators, safe indicators, and word frequency
       let impact = 0
       const wordHash = hashString(word + text.substring(0, 50)) // Deterministic hash
       const normalizedHash = (wordHash % 1000) / 1000 // 0 to 1
@@ -100,7 +100,7 @@ const generateWordHeatmap = (text, isSpam, spamProbability) => {
     let isSpamIndicator = false
     
     if (trimmedWord.length > 2) {
-      // Check if word is a spam or ham indicator
+      // Check if word is a spam or safe indicator
       if (SPAM_INDICATORS.has(trimmedWord)) {
         importance = 0.6 + (hashString(trimmedWord + index.toString()) % 100) / 500 // 0.6 to 0.8
         isSpamIndicator = true
@@ -356,21 +356,21 @@ const StatisticsDashboard = ({ stats, predictions }) => {
   const chartData = useMemo(() => {
     if (!predictions || predictions.length === 0) return null
 
-    // Data for spam/ham distribution pie chart (all predictions)
+    // Data for spam/safe distribution pie chart (all predictions)
     const spamCount = predictions.filter(p => p.is_spam).length
-    const hamCount = predictions.filter(p => !p.is_spam).length
+    const safeCount = predictions.filter(p => !p.is_spam).length
     const pieData = [
       { name: 'Spam', value: spamCount, color: '#e74c3c' },
-      { name: 'Legitimate', value: hamCount, color: '#27ae60' }
+      { name: 'Legitimate', value: safeCount, color: '#27ae60' }
     ]
 
     // Data for probability distribution histogram (all predictions)
     const probabilityRanges = [
-      { range: '0-20%', spam: 0, ham: 0 },
-      { range: '20-40%', spam: 0, ham: 0 },
-      { range: '40-60%', spam: 0, ham: 0 },
-      { range: '60-80%', spam: 0, ham: 0 },
-      { range: '80-100%', spam: 0, ham: 0 }
+      { range: '0-20%', spam: 0, safe: 0 },
+      { range: '20-40%', spam: 0, safe: 0 },
+      { range: '40-60%', spam: 0, safe: 0 },
+      { range: '60-80%', spam: 0, safe: 0 },
+      { range: '80-100%', spam: 0, safe: 0 }
     ]
 
     predictions.forEach(pred => {
@@ -381,7 +381,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
       if (pred.is_spam) {
         probabilityRanges[rangeIndex].spam++
       } else {
-        probabilityRanges[rangeIndex].ham++
+        probabilityRanges[rangeIndex].safe++
       }
     })
 
@@ -422,20 +422,20 @@ const StatisticsDashboard = ({ stats, predictions }) => {
           date: displayDate, 
           dateKey: dateKey,  // Keep ISO format for sorting
           spam: 0, 
-          ham: 0 
+          safe: 0 
         }
       }
       if (pred.is_spam) {
         timeSeriesData[dateKey].spam++
       } else {
-        timeSeriesData[dateKey].ham++
+        timeSeriesData[dateKey].safe++
       }
     })
 
     const timeSeriesArray = Object.values(timeSeriesData)
       .sort((a, b) => a.dateKey.localeCompare(b.dateKey))  // Sort by ISO date string (chronologically correct)
 
-    return { pieData, probabilityRanges, timeSeriesArray, spamCount, hamCount }
+    return { pieData, probabilityRanges, timeSeriesArray, spamCount, safeCount }
   }, [predictions, dateFilterStart, dateFilterEnd])
 
   const exportData = () => {
@@ -445,7 +445,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
       ['Metric', 'Value'],
       ['Total Predictions', predictions.length],
       ['Spam Count', chartData.spamCount],
-      ['Ham Count', chartData.hamCount],
+      ['Safe Count', chartData.safeCount],
       ['Spam Percentage', `${((chartData.spamCount / predictions.length) * 100).toFixed(2)}%`],
     ].map(row => row.join(',')).join('\n')
 
@@ -534,7 +534,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
               </div>
               <div className="detail-item">
                 <span className="detail-label">Prediction:</span>
-                <span className={`detail-value ${selectedPrediction.is_spam ? 'spam' : 'ham'}`}>
+                <span className={`detail-value ${selectedPrediction.is_spam ? 'spam' : 'safe'}`}>
                   {selectedPrediction.is_spam ? 'SPAM' : 'SAFE'}
                 </span>
               </div>
@@ -543,8 +543,8 @@ const StatisticsDashboard = ({ stats, predictions }) => {
                 <span className="detail-value">{(selectedPrediction.spam_probability * 100).toFixed(2)}%</span>
               </div>
               <div className="detail-item">
-                <span className="detail-label">Ham Probability:</span>
-                <span className="detail-value">{(selectedPrediction.ham_probability * 100).toFixed(2)}%</span>
+                <span className="detail-label">Safe Probability:</span>
+                <span className="detail-value">{(selectedPrediction.safe_probability * 100).toFixed(2)}%</span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">Timestamp:</span>
@@ -601,11 +601,11 @@ const StatisticsDashboard = ({ stats, predictions }) => {
               {predictions.map((prediction) => (
                 <div
                   key={prediction.prediction_id}
-                  className={`prediction-item ${prediction.is_spam ? 'spam' : 'ham'}`}
+                  className={`prediction-item ${prediction.is_spam ? 'spam' : 'safe'}`}
                 >
                   <div className="prediction-header">
                     <div className="prediction-status">
-                      <span className={`status-badge ${prediction.is_spam ? 'spam-badge' : 'ham-badge'}`}>
+                      <span className={`status-badge ${prediction.is_spam ? 'spam-badge' : 'safe-badge'}`}>
                         {prediction.is_spam ? 'SPAM' : 'SAFE'}
                       </span>
                       <span className="prediction-id">
@@ -633,9 +633,9 @@ const StatisticsDashboard = ({ stats, predictions }) => {
                       </span>
                     </div>
                     <div className="detail-item">
-                      <span className="detail-label">Ham Probability:</span>
-                      <span className={`detail-value ham ${!prediction.is_spam ? 'highlight' : ''}`}>
-                        {(prediction.ham_probability * 100).toFixed(2)}%
+                      <span className="detail-label">Safe Probability:</span>
+                      <span className={`detail-value safe ${!prediction.is_spam ? 'highlight' : ''}`}>
+                        {(prediction.safe_probability * 100).toFixed(2)}%
                       </span>
                     </div>
                     <div className="detail-item">
@@ -652,7 +652,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
         </div>
       ) : (
         <div className="stats-grid">
-        {/* Chart 1: Pie Chart - Spam/Ham Distribution */}
+        {/* Chart 1: Pie Chart - Spam/Safe Distribution */}
         <div className="chart-card">
           <h3>Spam vs Legitimate Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -662,7 +662,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
@@ -688,7 +688,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
               <Tooltip />
               <Legend />
               <Bar dataKey="spam" fill="#e74c3c" name="Spam" />
-              <Bar dataKey="ham" fill="#27ae60" name="Legitimate" />
+              <Bar dataKey="safe" fill="#27ae60" name="Legitimate" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -753,7 +753,7 @@ const StatisticsDashboard = ({ stats, predictions }) => {
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="ham" 
+                  dataKey="safe" 
                   stroke="#27ae60" 
                   name="Legitimate"
                   strokeWidth={2}

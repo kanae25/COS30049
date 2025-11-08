@@ -61,7 +61,7 @@ class PredictionResponse(BaseModel):
     text: str
     is_spam: bool
     spam_probability: float
-    ham_probability: float
+    safe_probability: float
     timestamp: str
     model_metadata: Dict
 
@@ -78,7 +78,7 @@ class BatchPredictionResponse(BaseModel):
     predictions: List[PredictionResponse]
     total_processed: int
     total_spam: int
-    total_ham: int
+    total_safe: int
 
 class UpdatePredictionRequest(BaseModel):
     feedback: str = Field(..., pattern="^(correct|incorrect)$", description="Feedback: 'correct' or 'incorrect'")
@@ -86,7 +86,7 @@ class UpdatePredictionRequest(BaseModel):
 class PredictionStatsResponse(BaseModel):
     total_predictions: int
     spam_count: int
-    ham_count: int
+    safe_count: int
     accuracy_feedback: float
     recent_predictions: List[PredictionResponse]
 
@@ -201,13 +201,13 @@ async def generate_sample_data():
             
             # override with desired label and unique probability
             spam_prob = unique_probabilities[idx]
-            ham_prob = 1.0 - spam_prob
+            safe_prob = 1.0 - spam_prob
             is_spam = sample['desired_label'] == 'spam'
             
             result = {
                 'is_spam': is_spam,
                 'spam_probability': spam_prob,
-                'ham_probability': ham_prob
+                'safe_probability': safe_prob
             }
             
             # create prediction
@@ -217,7 +217,7 @@ async def generate_sample_data():
                 text=sample['text'][:100] + "..." if len(sample['text']) > 100 else sample['text'],
                 is_spam=result['is_spam'],
                 spam_probability=result['spam_probability'],
-                ham_probability=result['ham_probability'],
+                safe_probability=result['safe_probability'],
                 timestamp=sample['date'],
                 model_metadata=model_service.get_metadata()
             )
@@ -285,7 +285,7 @@ async def predict_spam(request: PredictionRequest):
             text=request.text[:100] + "..." if len(request.text) > 100 else request.text,  # Truncate for response
             is_spam=result['is_spam'],
             spam_probability=result['spam_probability'],
-            ham_probability=result['ham_probability'],
+            safe_probability=result['safe_probability'],
             timestamp=datetime.now().isoformat(),
             model_metadata=model_service.get_metadata()
         )
@@ -326,7 +326,7 @@ async def batch_predict_spam(request: BatchPredictionRequest):
         
         predictions = []
         total_spam = 0
-        total_ham = 0
+        total_safe = 0
         
         for text in request.texts:
             result = model_service.predict(text)
@@ -337,7 +337,7 @@ async def batch_predict_spam(request: BatchPredictionRequest):
                 text=text[:100] + "..." if len(text) > 100 else text,
                 is_spam=result['is_spam'],
                 spam_probability=result['spam_probability'],
-                ham_probability=result['ham_probability'],
+                safe_probability=result['safe_probability'],
                 timestamp=datetime.now().isoformat(),
                 model_metadata=model_service.get_metadata()
             )
@@ -348,13 +348,13 @@ async def batch_predict_spam(request: BatchPredictionRequest):
             if result['is_spam']:
                 total_spam += 1
             else:
-                total_ham += 1
+                total_safe += 1
         
         return BatchPredictionResponse(
             predictions=predictions,
             total_processed=len(predictions),
             total_spam=total_spam,
-            total_ham=total_ham
+            total_safe=total_safe
         )
         
     except ValueError as e:
@@ -489,7 +489,7 @@ async def get_stats():
     """
     Get statistics about predictions
     
-    Returns summary statistics including total predictions, spam/ham counts,
+    Returns summary statistics including total predictions, spam/safe counts,
     accuracy feedback, and recent predictions
     """
     try:
