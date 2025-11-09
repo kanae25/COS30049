@@ -57,30 +57,15 @@ const handleSubmit = async (e) => {
 
 ### 2.2 Data Visualization
 
-The application includes comprehensive data visualizations implemented using the Recharts library, providing multiple perspectives on prediction data.
+The application provides comprehensive data visualizations using the Recharts library, offering both aggregate analytics and individual prediction analysis.
 
-#### 2.2.1 Statistics Dashboard
+**Statistics Dashboard** (`StatisticsDashboard` component) features two analysis modes:
 
-The `StatisticsDashboard` component offers two analysis modes:
+1. **Aggregate Analysis**: Displays three interactive charts—a pie chart showing spam vs legitimate distribution, a bar chart illustrating probability distribution across ranges (0-20%, 20-40%, 40-60%, 60-80%, 80-100%), and a time series line chart with date range filtering for tracking predictions over time.
 
-**1. Aggregate Analysis Mode:**
-- **Spam vs Legitimate Distribution Pie Chart**: Visual representation of the proportion of spam and legitimate emails in all predictions
-- **Spam Probability Distribution Bar Chart**: Histogram showing the distribution of predictions across probability ranges (0-20%, 20-40%, 40-60%, 60-80%, 80-100%)
-- **Predictions Over Time Line Chart**: Time series visualization showing spam and legitimate predictions over time, with date range filtering capabilities
+2. **Single Prediction Analysis**: Provides detailed analysis of individual predictions through a token impact bar chart (showing top 15 most influential words) and an in-text heatmap that color-codes words by their contribution to the classification (red for spam-indicating, green for legitimate-indicating).
 
-**2. Single Prediction Analysis Mode:**
-- **Token Impact Visualization**: A horizontal bar chart displaying the top 15 most influential words in a prediction, showing how each token contributes to the spam/legitimate classification
-- **In-Text Heatmap**: Interactive text visualization that highlights words in the email text, color-coded by importance (red for spam-indicating words, green for legitimate-indicating words)
-
-**Key Visualization Features:**
-- **Responsive Design**: All charts use `ResponsiveContainer` to adapt to different screen sizes
-- **Interactive Tooltips**: Hover interactions provide detailed information about data points
-- **Date Filtering**: The time series chart includes date range filters (start and end dates) to analyze specific time periods
-- **Export Functionality**: Users can export statistics as CSV files
-
-**Visualization Implementation Example:**
-
-The pie chart implementation is located in `frontend/src/components/StatisticsDashboard.jsx`:
+All visualizations are responsive, include interactive tooltips, and support CSV export functionality. The pie chart implementation example is located in `frontend/src/components/StatisticsDashboard.jsx`:
 
 ```jsx
 // File: frontend/src/components/StatisticsDashboard.jsx (lines 658-677)
@@ -106,13 +91,7 @@ The pie chart implementation is located in `frontend/src/components/StatisticsDa
 </ResponsiveContainer>
 ```
 
-#### 2.2.2 Prediction Results Display
-
-The `PredictionResults` component presents prediction outcomes with:
-- **Status Badge**: Visual indicator (SPAM/SAFE) with color coding
-- **Probability Bars**: Visual representation of spam and safe probabilities with percentage values
-- **Model Information**: Displays model metadata including model type, accuracy, F1 score, and prediction timestamp
-- **Color-coded Cards**: Results are displayed in cards with different color schemes for spam (red) and legitimate (green) predictions
+**Prediction Results Display** (`PredictionResults` component) presents outcomes with color-coded status badges (SPAM/SAFE), probability bars showing spam and safe percentages, and model metadata including type, accuracy, F1 score, and timestamp.
 
 ### 2.3 HTTP Requests and Backend Integration
 
