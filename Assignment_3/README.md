@@ -15,7 +15,7 @@ The application runs independently and does not require Assignment 2 to be prese
 ## Prerequisites
 
 - **Python 3.8+**
-- **Node.js 16+** and npm
+- **Node.js 16+** and npm (will be installed automatically when running main.py)
 - **AI model** in `backend/models/spam_detection_model.pkl` (should already be packaged)
 
 ## Quick Start
