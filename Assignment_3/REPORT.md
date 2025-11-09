@@ -195,5 +195,179 @@ The frontend follows a component-based architecture with clear separation of con
 - Accessible color schemes and contrast
 - Clear typography and spacing
 
+## 3. Backend Implementation
+
+The backend of ShieldMail is built using FastAPI, a modern Python web framework that provides automatic API documentation, type validation, and asynchronous request handling. The server implements a RESTful API architecture for spam detection predictions and data management.
+
+### 3.1 FastAPI Server Setup
+
+The FastAPI application is initialized in `backend/main.py` with comprehensive configuration:
+
+```python
+# File: backend/main.py (lines 30-43)
+app = FastAPI(
+    title="ShieldMail API",
+    description="Spam Detection API for ShieldMail Web Application",
+    version="1.0.0"
+)
+
+# CORS middleware for React frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+**Key Configuration Features:**
+- **CORS Middleware**: Enables cross-origin requests from the React frontend running on ports 3000 and 5173
+- **Automatic API Documentation**: FastAPI generates interactive API documentation at `/docs` endpoint
+- **Type Validation**: Uses Pydantic models for request/response validation
+- **Error Handling**: Global exception handler for consistent error responses
+- **Service Integration**: Initializes `ModelService` for AI model operations and `PredictionStore` for in-memory prediction storage
+
+**Service Architecture:**
+- **ModelService**: Loads and manages the packaged AI model from Assignment 2, providing prediction functionality
+- **PredictionStore**: In-memory storage for predictions with methods for CRUD operations and statistics calculation
+
+### 3.2 API Endpoint Documentation
+
+The backend provides multiple RESTful endpoints for spam detection and prediction management. The following sections document the four most critical endpoints. *Note: Due to page limitations, not all API endpoints are shown here. Additional endpoints include batch prediction, model information retrieval, health checks, and prediction updates.*
+
+#### 3.2.1 POST /api/predict
+
+Predicts whether an email text is spam or legitimate.
+
+**Request:**
+- **Method**: `POST`
+- **URL**: `/api/predict`
+- **Content-Type**: `application/json`
+- **Request Body**:
+```json
+{
+  "text": "Email text to analyze (1-50000 characters)"
+}
+```
+
+**Response:**
+- **Status Code**: `201 Created` (success) or `400 Bad Request` / `503 Service Unavailable` (error)
+- **Response Body**:
+```json
+{
+  "prediction_id": "uuid-string",
+  "text": "Truncated email text...",
+  "is_spam": true,
+  "spam_probability": 0.85,
+  "safe_probability": 0.15,
+  "timestamp": "2024-11-06T12:00:00.000000",
+  "model_metadata": {
+    "model_type": "Naive Bayes",
+    "accuracy": 0.92,
+    "f1_score": 0.89
+  }
+}
+```
+
+**Implementation Location**: `backend/main.py` (lines 262-308)
+
+#### 3.2.2 GET /api/predictions
+
+Retrieves stored predictions with pagination support.
+
+**Request:**
+- **Method**: `GET`
+- **URL**: `/api/predictions?limit=50&offset=0`
+- **Query Parameters**:
+  - `limit` (optional): Maximum number of predictions to return (default: 50, max: 500)
+  - `offset` (optional): Number of predictions to skip (default: 0)
+
+**Response:**
+- **Status Code**: `200 OK` (success) or `500 Internal Server Error` (error)
+- **Response Body**: Array of prediction objects
+```json
+[
+  {
+    "prediction_id": "uuid-string",
+    "text": "Truncated email text...",
+    "is_spam": false,
+    "spam_probability": 0.25,
+    "safe_probability": 0.75,
+    "timestamp": "2024-11-06T11:00:00.000000",
+    "model_metadata": {...}
+  },
+  ...
+]
+```
+
+**Implementation Location**: `backend/main.py` (lines 372-393)
+
+#### 3.2.3 GET /api/stats
+
+Retrieves aggregate statistics about all predictions.
+
+**Request:**
+- **Method**: `GET`
+- **URL**: `/api/stats`
+
+**Response:**
+- **Status Code**: `200 OK` (success) or `500 Internal Server Error` (error)
+- **Response Body**:
+```json
+{
+  "total_predictions": 150,
+  "spam_count": 45,
+  "safe_count": 105,
+  "accuracy_feedback": 92.5,
+  "recent_predictions": [
+    {
+      "prediction_id": "uuid-string",
+      "text": "Truncated email text...",
+      "is_spam": true,
+      "spam_probability": 0.90,
+      "safe_probability": 0.10,
+      "timestamp": "2024-11-06T12:00:00.000000",
+      "model_metadata": {...}
+    },
+    ...
+  ]
+}
+```
+
+**Implementation Location**: `backend/main.py` (lines 487-503)
+
+#### 3.2.4 DELETE /api/predictions/{prediction_id}
+
+Deletes a specific prediction by its unique identifier.
+
+**Request:**
+- **Method**: `DELETE`
+- **URL**: `/api/predictions/{prediction_id}`
+- **Path Parameters**:
+  - `prediction_id`: Unique prediction identifier (UUID string)
+
+**Response:**
+- **Status Code**: `200 OK` (success), `404 Not Found` (prediction not found), or `500 Internal Server Error` (error)
+- **Response Body**:
+```json
+{
+  "message": "Prediction deleted successfully",
+  "prediction_id": "uuid-string"
+}
+```
+
+**Implementation Location**: `backend/main.py` (lines 456-484)
+
+### 3.3 Data Models and Validation
+
+The backend uses Pydantic models for request and response validation, ensuring type safety and data integrity:
+
+**PredictionRequest** (`backend/main.py`, lines 50-57): Validates input text with constraints (1-50000 characters, non-empty after trimming)
+
+**PredictionResponse** (`backend/main.py`, lines 59-66): Defines the structure of prediction responses including prediction ID, classification results, probabilities, timestamp, and model metadata
+
+**Error Handling**: All endpoints implement comprehensive error handling with appropriate HTTP status codes (400 for validation errors, 404 for not found, 503 for service unavailable, 500 for server errors)
+
 ---
 
