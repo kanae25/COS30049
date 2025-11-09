@@ -369,5 +369,169 @@ The backend uses Pydantic models for request and response validation, ensuring t
 
 **Error Handling**: All endpoints implement comprehensive error handling with appropriate HTTP status codes (400 for validation errors, 404 for not found, 503 for service unavailable, 500 for server errors)
 
+## 4. AI Model Integration
+
+The ShieldMail application integrates a Naive Bayes spam detection model trained in Assignment 2, packaged for standalone execution in Assignment 3. The model is loaded at application startup and provides real-time spam classification through the FastAPI backend.
+
+### 4.1 Model Training and Packaging
+
+The spam detection model is trained using the `train_and_save_models.py` script, which processes email data and creates a scikit-learn pipeline combining TF-IDF vectorization with Naive Bayes classification.
+
+**Model Training Process** (`train_and_save_models.py`, lines 33-148):
+
+```python
+# File: train_and_save_models.py (lines 59-109)
+# Create and train vectorizer
+vectorizer = TfidfVectorizer(
+    max_features=10000,
+    stop_words='english',
+    ngram_range=(1, 2),
+    min_df=2,
+    max_df=0.95
+)
+X_train_vec = vectorizer.fit_transform(X_train)
+
+# Train multiple NB models
+models = {
+    'MultinomialNB': MultinomialNB(alpha=1.0),
+    'BernoulliNB': BernoulliNB(alpha=1.0)
+}
+
+# Select best model based on F1 score
+best_name = max(results.keys(), key=lambda k: results[k]['f1'])
+best_model = results[best_name]['model']
+
+# Create pipeline with vectorizer and model
+pipeline = Pipeline([
+    ('vectorizer', vectorizer),
+    ('classifier', best_model)
+])
+pipeline.fit(X_train, y_train)
+```
+
+**Key Training Features:**
+- **TF-IDF Vectorization**: Converts email text into numerical features using term frequency-inverse document frequency, with 10,000 maximum features, English stop words, and bigrams (1-2 word combinations)
+- **Model Selection**: Tests both MultinomialNB and BernoulliNB variants, selecting the best model based on F1 score
+- **Pipeline Architecture**: Combines vectorizer and classifier into a single scikit-learn Pipeline for consistent preprocessing and prediction
+- **Model Persistence**: Saves the trained pipeline as `spam_detection_model.pkl` using joblib serialization
+
+**Model Metadata** (`backend/models/model_metadata.json`):
+The training script saves model metadata including performance metrics, feature counts, and training statistics:
+
+```json
+{
+  "model_type": "MultinomialNB",
+  "accuracy": 0.965,
+  "precision": 0.912,
+  "recall": 0.901,
+  "f1_score": 0.907,
+  "n_features": 10000,
+  "n_train_samples": 8572,
+  "n_test_samples": 2143
+}
+```
+
+### 4.2 Model Loading and Service Integration
+
+The `ModelService` class (`backend/model_service.py`) handles model loading, initialization, and prediction functionality. The service is initialized when the FastAPI application starts, automatically loading the packaged model from `backend/models/`.
+
+**Model Loading** (`backend/model_service.py`, lines 34-71):
+
+```python
+# File: backend/model_service.py (lines 34-71)
+def _load_model(self):
+    """Load the trained model from Assignment 3's models directory."""
+    try:
+        script_dir = Path(__file__).parent  # backend directory
+        model_path = script_dir / "models" / "spam_detection_model.pkl"
+        metadata_path = script_dir / "models" / "model_metadata.json"
+        
+        if not model_path.exists():
+            print(f"Warning: Model not found at {model_path}")
+            return
+        
+        # Load model
+        self.model = joblib.load(model_path)
+        self.model_path = model_path
+        
+        # Load metadata if available
+        if metadata_path.exists():
+            with open(metadata_path, 'r') as f:
+                self.metadata = json.load(f)
+        
+        print(f"Model loaded successfully from {model_path}")
+    except Exception as e:
+        print(f"Error loading model: {str(e)}")
+        self.model = None
+        self.metadata = None
+```
+
+**Service Initialization**: The `ModelService` is instantiated in `backend/main.py` (line 46) during application startup, ensuring the model is loaded and ready before any prediction requests are processed.
+
+### 4.3 Prediction Process
+
+The prediction workflow integrates the loaded model with the FastAPI backend to provide real-time spam classification:
+
+**Prediction Method** (`backend/model_service.py`, lines 77-121):
+
+```python
+# File: backend/model_service.py (lines 77-121)
+def predict(self, text: str) -> Dict:
+    """Predict if text is spam using the packaged AI model."""
+    if not self.is_model_loaded():
+        raise ValueError("Model is not loaded.")
+    
+    if not text or not text.strip():
+        raise ValueError("Input text cannot be empty")
+    
+    try:
+        # Get prediction probabilities
+        probabilities = self.model.predict_proba([text])[0]
+        
+        # Get prediction class
+        prediction = self.model.predict([text])[0]
+        
+        # Extract probabilities
+        # Class 0 = safe (legitimate), Class 1 = spam
+        safe_prob = float(probabilities[0])
+        spam_prob = float(probabilities[1])
+        
+        # Determine if spam (1 = spam, 0 = safe)
+        is_spam = bool(prediction == 1)
+        
+        return {
+            'is_spam': is_spam,
+            'spam_probability': spam_prob,
+            'safe_probability': safe_prob
+        }
+    except Exception as e:
+        raise ValueError(f"Prediction failed: {str(e)}")
+```
+
+**Prediction Flow:**
+1. **Input Validation**: The service validates that the model is loaded and input text is not empty
+2. **Text Preprocessing**: The pipeline automatically applies TF-IDF vectorization using the fitted vectorizer from training
+3. **Classification**: The Naive Bayes classifier predicts the class (spam or legitimate) and provides probability scores for both classes
+4. **Result Formatting**: Returns a dictionary with binary classification (`is_spam`) and probability scores for both classes
+
+**API Integration**: The prediction endpoint (`POST /api/predict`) in `backend/main.py` (lines 262-308) calls `model_service.predict()` to obtain predictions, then stores results and returns formatted responses to the frontend.
+
+### 4.4 Standalone Execution
+
+Assignment 3 operates as a standalone application with the AI model packaged within the project structure:
+
+**Model Packaging:**
+- Model file: `backend/models/spam_detection_model.pkl` (serialized scikit-learn Pipeline)
+- Metadata file: `backend/models/model_metadata.json` (performance metrics and model information)
+- No external dependencies on Assignment 2 at runtime
+
+**Integration Benefits:**
+- **Self-contained**: All model files included in Assignment 3 directory structure
+- **Automatic Loading**: Model loads automatically when the backend server starts
+- **Error Handling**: Graceful handling of missing model files with informative error messages
+- **Metadata Access**: Model performance metrics and information available through API endpoints (`/api/model/info`)
+
+The model integration ensures that Assignment 3 can run independently without requiring Assignment 2 to be present, while maintaining the same prediction accuracy and functionality.
+
 ---
 
