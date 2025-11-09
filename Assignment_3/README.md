@@ -55,7 +55,43 @@ pip install -r requirements.txt
 
 **Note:** Frontend dependencies (npm packages) will be automatically installed when you run `python main.py`. No need to run `npm install` manually!
 
-### 2. Start Application
+### 2. AI Model Integration Configuration
+
+The AI model from Assignment 2 should already be packaged in the `backend/models/` directory. If the model files are missing, follow these steps:
+
+**Required Files:**
+- `backend/models/spam_detection_model.pkl` - The trained spam detection model
+- `backend/models/model_metadata.json` - Model metadata (optional but recommended)
+
+**If Model Files Are Missing:**
+
+1. **Copy from Assignment 2:**
+   ```bash
+   # From Assignment 2's outputs/models/ to Assignment_3/backend/models/
+   cp ../Assignment_2/outputs/models/spam_detection_model.pkl backend/models/
+   cp ../Assignment_2/outputs/models/model_metadata.json backend/models/
+   ```
+
+2. **Verify Model Files:**
+   ```bash
+   # Check if model files exist
+   ls backend/models/spam_detection_model.pkl
+   ls backend/models/model_metadata.json
+   ```
+
+**Model Loading:**
+- The model is automatically loaded by `ModelService` when the backend starts
+- The model service is initialized in `backend/main.py` and loads from `backend/models/`
+- No additional configuration is needed - the model is loaded automatically on application startup
+- You can verify the model loaded successfully by checking the backend startup logs or visiting `http://localhost:8000/api/model/info`
+
+**Verification:**
+After starting the application, you can verify the model is loaded:
+- Check backend console output for: `Model loaded successfully from ...`
+- Visit `http://localhost:8000/api/health` to see model loading status
+- Visit `http://localhost:8000/api/model/info` for detailed model information
+
+### 3. Start Application
 
 Start both backend and frontend with a single command:
 
@@ -101,7 +137,7 @@ cd frontend
 npm run dev
 ```
 
-### 3. Use the Application
+### 4. Use the Application
 
 1. Open http://localhost:5173 in your browser
 2. Enter email text in the input field
