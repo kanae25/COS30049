@@ -95,20 +95,9 @@ All visualizations are responsive, include interactive tooltips, and support CSV
 
 ### 2.3 HTTP Requests and Backend Integration
 
-The frontend communicates with the backend API using the native `fetch` API (though Axios is available in dependencies). All API calls are centralized in the main `App` component, which manages state and coordinates data flow.
+The frontend communicates with the backend API using the native `fetch` API, with all API calls centralized in the `App` component for state management and data flow coordination. The API base URL is configured via environment variables with a fallback to relative URLs for development (`frontend/src/App.jsx`, line 18).
 
-#### 2.3.1 API Configuration
-
-The application uses environment variables for API URL configuration, with a fallback to relative URLs for development. This configuration is in `frontend/src/App.jsx`:
-
-```jsx
-// File: frontend/src/App.jsx (line 18)
-const API_BASE_URL = import.meta.env.VITE_API_URL || ''
-```
-
-#### 2.3.2 Prediction Request
-
-The prediction request is handled by the `handlePredict` function, which sends a POST request to the `/api/predict` endpoint. This function is implemented in `frontend/src/App.jsx`:
+**Prediction Request** (`handlePredict` function in `frontend/src/App.jsx`, lines 49-98) sends a POST request to `/api/predict` with comprehensive error handling, loading states, and automatic refresh of statistics and prediction history after successful predictions:
 
 ```jsx
 // File: frontend/src/App.jsx (lines 49-98)
@@ -154,75 +143,7 @@ const handlePredict = async (text) => {
 }
 ```
 
-**Key Features:**
-- **Error Handling**: Comprehensive error handling for network failures, API errors, and invalid responses
-- **Loading States**: Loading indicators prevent duplicate submissions and provide user feedback
-- **Automatic Refresh**: After a successful prediction, statistics and prediction history are automatically refreshed
-- **User Feedback**: Clear error messages guide users when issues occur
-
-#### 2.3.3 Additional API Endpoints
-
-The application interacts with several other backend endpoints:
-
-**Statistics Retrieval:**
-The statistics fetching function is located in `frontend/src/App.jsx`:
-
-```jsx
-// File: frontend/src/App.jsx (lines 25-35)
-const fetchStats = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/stats`)
-    if (response.ok) {
-      const data = await response.json()
-      setStats(data)
-    }
-  } catch (err) {
-    console.error('Error fetching stats:', err)
-  }
-}
-```
-
-**Prediction History:**
-The prediction history retrieval function is in `frontend/src/App.jsx`:
-
-```jsx
-// File: frontend/src/App.jsx (lines 37-47)
-const fetchPredictions = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/predictions?limit=50`)
-    if (response.ok) {
-      const data = await response.json()
-      setPredictions(data)
-    }
-  } catch (err) {
-    console.error('Error fetching predictions:', err)
-  }
-}
-```
-
-**Prediction Deletion:**
-The prediction deletion handler is implemented in `frontend/src/App.jsx`:
-
-```jsx
-// File: frontend/src/App.jsx (lines 100-116)
-const handleDeletePrediction = async (predictionId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/predictions/${predictionId}`, {
-      method: 'DELETE',
-    })
-
-    if (response.ok) {
-      await Promise.all([fetchStats(), fetchPredictions()])
-      // Clear current prediction if it was deleted
-      if (prediction && prediction.prediction_id === predictionId) {
-        setPrediction(null)
-      }
-    }
-  } catch (err) {
-    console.error('Error deleting prediction:', err)
-  }
-}
-```
+**Additional API Endpoints** include GET requests for statistics (`/api/stats`) and prediction history (`/api/predictions?limit=50`), and DELETE requests for prediction deletion (`/api/predictions/{id}`). All endpoints implement proper error handling and automatically refresh related data upon successful operations.
 
 ### 2.4 Component Architecture
 
